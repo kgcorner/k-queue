@@ -9,6 +9,12 @@ public class Subscriber {
     private boolean isInformed;
     private Date informedAt;
 
+    public Subscriber(String endpointAddress, String method, String contentType) {
+        this.endpointAddress = endpointAddress;
+        this.method = method;
+        this.contentType = contentType;
+    }
+
     /**
      * Returns endpoint of the subscriber
      * @return
