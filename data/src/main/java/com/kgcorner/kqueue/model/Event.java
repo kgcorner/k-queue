@@ -1,5 +1,6 @@
 package com.kgcorner.kqueue.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Event {
@@ -13,6 +14,7 @@ public class Event {
 
     public Event(String tag) {
         this.tag = tag;
+        subscribers = new ArrayList<>();
     }
 
     /**
