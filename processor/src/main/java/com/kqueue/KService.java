@@ -2,6 +2,7 @@ package com.kqueue;
 
 import com.kgcorner.kqueue.model.Event;
 import com.kgcorner.kqueue.model.KQueue;
+import com.kgcorner.kqueue.model.Subscriber;
 
 import java.util.List;
 
@@ -64,4 +65,14 @@ public interface KService {
      * @param queueId
      */
     void markEventCompleted(String tag, String data, String queueId);
+
+    /**
+     * add subscriber to an event
+     * @param queueId
+     * @param eventTag
+     * @param endpoint
+     * @param method
+     * @param contentType
+     */
+    void addSubscriber(String queueId, String eventTag, String endpoint, String method, String contentType);
 }

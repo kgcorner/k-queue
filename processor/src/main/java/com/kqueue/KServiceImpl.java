@@ -3,6 +3,7 @@ package com.kqueue;
 import com.kgcorner.kqueue.data.QueueStore;
 import com.kgcorner.kqueue.model.Event;
 import com.kgcorner.kqueue.model.KQueue;
+import com.kgcorner.kqueue.model.Subscriber;
 import com.kqueue.exception.IncompatibleQueueException;
 import com.util.IDGenerator;
 import com.util.JWTUtility;
@@ -130,6 +131,20 @@ public class KServiceImpl implements KService {
                 }
             }
             lock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public void addSubscriber(String queueId, String eventTag, String endpoint, String method, String contentType) {
+        KQueue queue = STORE.getKQueue(queueId);
+        if(queue != null) {
+            for (Event e : queue.getEvents()) {
+                if(e.getTag().equals(eventTag)) {
+                    Subscriber s = new Subscriber(endpoint, method, contentType);
+                    e.getSubscribers().add(s);
+                    break;
+                }
+            }
         }
     }
 }
