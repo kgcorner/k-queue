@@ -9,6 +9,7 @@
         <module>api</module>
         <module>data</module>
         <module>processor</module>
+        <module>kqueuedemo</module>
     </modules>
     <packaging>pom</packaging>
     <name>k-queue</name>
