@@ -31,7 +31,9 @@ public class ImmediateQueueProcessor implements Processor {
             if(e.isDoneAtSource() && !e.isProcessed() && !e.isProcessing()) {
                 e.setProcessing(true);
                 KQueueExecutor.getInstance().broadCastEvent(e, KQueue.QUEUE_TYPE.IMMIDIATE);
+                break;
             }
         }
+        lock.writeLock().unlock();
     }
 }

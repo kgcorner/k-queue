@@ -30,7 +30,9 @@ public class AdjustableQueueProcessor implements Processor {
                 e.setProcessing(true);
                 KQueueExecutor.getInstance().broadCastEvent(e, KQueue.QUEUE_TYPE.FIFO_ADJUST);
                 queue.removeEvent(e.getTag());
+                break;
             }
         }
+        lock.writeLock().unlock();
     }
 }

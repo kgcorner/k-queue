@@ -31,7 +31,9 @@ public class FifoQueueProcessor implements Processor {
                 e.setProcessing(true);
                 KQueueExecutor.getInstance().broadCastEvent(e, KQueue.QUEUE_TYPE.FIFO);
                 queue.removeEvent(e.getTag());
+                break;
             }
         }
+        lock.writeLock().unlock();
     }
 }
