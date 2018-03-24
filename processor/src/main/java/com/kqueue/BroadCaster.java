@@ -38,7 +38,7 @@ public class BroadCaster implements Runnable {
                     }
                     subscriber.setInformed(true);
                     subscriber.setInformedAt(new Date());
-                    LOGGER.debug("Subscriber informered about event :"+event.getTag()+" received response :" +response.getData());
+                    LOGGER.debug("Subscriber informed about event :"+event.getTag()+" received response :" +response.getData());
                     event.setProcessed(true);
                     event.setProcessing(false);
                     event.setDoneAtSource(false);
