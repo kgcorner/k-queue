@@ -34,7 +34,7 @@ public class QueueResource extends ExceptionAware {
             @RequestParam("events") String tags
     ) {
 
-        if(Strings.isNullOrEmpty(tags)) {
+        if(!Strings.isNullOrEmpty(tags)) {
             List eventTags = Arrays.asList(tags.split(","));
             return service.addQueue(type, eventTags);
         } else {
@@ -46,7 +46,7 @@ public class QueueResource extends ExceptionAware {
     @PostMapping("queues/{queueId}/events")
     public ResponseObject addEvents(
             @ApiParam("Authorization Header")
-            @RequestHeader("Authorization") String authHeader,
+            @RequestHeader(value="Authorization", required = false) String authHeader,
             @ApiParam("Queue Auth code")
             @RequestHeader("X-QUEUE-AUTH") String queueAuthCode,
             @ApiParam("Queue id")
@@ -59,7 +59,7 @@ public class QueueResource extends ExceptionAware {
         if(queue == null) {
             throw new ItemNotFoundException("No Queue found with id:"+queueId);
         }
-        if(!Strings.isNullOrEmpty(tag)) {
+        if(Strings.isNullOrEmpty(tag)) {
             throw new IllegalArgumentException("tag name can't be empty");
         }
         if(!Strings.isNullOrEmpty(queue.getAuthString()) && queue.getAuthString().equals(queueAuthCode)) {
@@ -75,11 +75,11 @@ public class QueueResource extends ExceptionAware {
     }
 
 
-    @ApiOperation("Update queue status")
-    @PostMapping("queues/{queueId}/events/{tag}")
+    @ApiOperation("Update event status")
+    @PutMapping("queues/{queueId}/events/{tag}")
     public ResponseObject updateEventStatus(
             @ApiParam("Authorization Header")
-            @RequestHeader("Authorization") String authHeader,
+            @RequestHeader(value="Authorization", required = false) String authHeader,
             @ApiParam("Queue Auth code")
             @RequestHeader("X-QUEUE-AUTH") String queueAuthCode,
             @ApiParam("Queue id")
@@ -96,15 +96,60 @@ public class QueueResource extends ExceptionAware {
         if(queue == null) {
             throw new ItemNotFoundException("No Queue found with id:"+queueId);
         }
-        if(!Strings.isNullOrEmpty(tag)) {
+        if(Strings.isNullOrEmpty(tag)) {
             throw new IllegalArgumentException("tag name can't be empty");
         }
         if(!Strings.isNullOrEmpty(queue.getAuthString()) && queue.getAuthString().equals(queueAuthCode)) {
-
+            if(status == 1) {
+                service.markEventCompleted(tag, data, queueId);
+            }
+            responseObject = new ResponseObject();
+            responseObject.setMessage("event's status has been updated");
+            responseObject.setStatus(200);
         }
         else {
             throw new UnauthorisedAccessException("Invalid Queue authcode provided");
         }
+        return responseObject;
+    }
+
+
+    @ApiOperation("Subscribe to an event")
+    @PostMapping("queues/{queueId}/events/{tag}/subscribe")
+    public ResponseObject subscribeEvent(
+            @ApiParam("Queue id")
+            @PathVariable("queueId") String queueId,
+            @ApiParam("Tag to identify event")
+            @PathVariable("tag") String tag,
+            @ApiParam(value = "Subscriber's endpoint address", required = true)
+            @RequestParam(value = "endpoint", required = false) String endpoint,
+            @ApiParam(value = "Subscriber's endpoint method", required = true)
+            @RequestParam(value = "method", required = false) String method,
+            @ApiParam(value = "Subscriber's endpoint content-type", required = true)
+            @RequestParam(value = "content-type", required = false) String contentType
+
+    ) {
+        ResponseObject responseObject = null;
+        KQueue queue = service.getQueue(queueId);
+        if(queue == null) {
+            throw new ItemNotFoundException("No Queue found with id:"+queueId);
+        }
+        if(Strings.isNullOrEmpty(tag)) {
+            throw new IllegalArgumentException("tag name can't be empty");
+        }
+        if(Strings.isNullOrEmpty(endpoint)) {
+            throw new IllegalArgumentException("endpoint name can't be empty");
+        }
+        if(Strings.isNullOrEmpty(method)) {
+            throw new IllegalArgumentException("method name can't be empty");
+        }
+        if(Strings.isNullOrEmpty(contentType)) {
+            throw new IllegalArgumentException("content-type name can't be empty");
+        }
+        service.addSubscriber(queueId, tag, endpoint, method, contentType);
+        responseObject = new ResponseObject();
+        responseObject.setMessage("Subscriber added succesfully");
+        responseObject.setStatus(200);
         return responseObject;
     }
 }
