@@ -92,7 +92,7 @@ public abstract class KQueue {
                 queue = new AdjustableKQueue();
                 break;
         }
-
+        queue.type = type;
         queue.setId(id);
         queue.setAuthString(authString);
         queue.setCreatedAt(new Date());
@@ -177,7 +177,7 @@ public abstract class KQueue {
         }
 
         public QUEUE_TYPE getType() {
-            return QUEUE_TYPE.FIFO;
+            return QUEUE_TYPE.FIFO_ADJUST;
         }
 
         public List<Event> getEvents() {
@@ -199,7 +199,7 @@ public abstract class KQueue {
         }
 
         public QUEUE_TYPE getType() {
-            return QUEUE_TYPE.FIFO;
+            return QUEUE_TYPE.IMMIDIATE;
         }
 
         public Collection<Event> getEvents() {
