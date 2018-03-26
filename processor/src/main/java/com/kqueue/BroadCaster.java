@@ -24,16 +24,16 @@ public class BroadCaster implements Runnable {
     public void run() {
         if(event.isDoneAtSource()) {
             LOGGER.debug("Broadcasting Event");
-            Map<String, String> headers = new HashMap<String, String>();
+            //Map<String, String> headers = new HashMap<String, String>();
             for(Subscriber subscriber : event.getSubscribers()) {
                 Response response = null;
                 try {
                     switch (subscriber.getMethod().toLowerCase()) {
                         case "post":
-                            response = HttpUtil.sendPostRequest(subscriber.getEndpointAddress(), headers, event.getData());
+                            response = HttpUtil.sendPostRequest(subscriber.getEndpointAddress(), null, event.getData());
                             break;
                         case "get":
-                            response = HttpUtil.sendGetRequest(subscriber.getEndpointAddress(), headers);
+                            response = HttpUtil.sendGetRequest(subscriber.getEndpointAddress(), null);
                             break;
                     }
                     subscriber.setInformed(true);
