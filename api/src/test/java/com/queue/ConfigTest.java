@@ -3,7 +3,7 @@ package com.queue;
 
 import java.lang.annotation.*;
 
-import com.kqueue.Application;
+import com.lluvia.Application;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
