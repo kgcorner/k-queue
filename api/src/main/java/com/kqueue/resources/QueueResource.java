@@ -9,6 +9,7 @@ import com.kqueue.exception.UnauthorisedAccessException;
 import com.util.Strings;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -25,6 +26,7 @@ public class QueueResource extends ExceptionAware {
 
     @ApiOperation("Creates a queue of given type, use 1 for FIFO, 2 for FIFO_ADJUST, 3 for IMMEDIATE")
     @PostMapping("queues")
+    @ResponseStatus(HttpStatus.CREATED)
     public KQueue createQueue(
             @ApiParam(value = "Authorization Header", required = false)
             @RequestHeader(value = "Authorization", required = false) String authHeader,
@@ -44,6 +46,7 @@ public class QueueResource extends ExceptionAware {
 
     @ApiOperation("Add event to queue")
     @PostMapping("queues/{queueId}/events")
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseObject addEvents(
             @ApiParam("Authorization Header")
             @RequestHeader(value="Authorization", required = false) String authHeader,
@@ -77,6 +80,7 @@ public class QueueResource extends ExceptionAware {
 
     @ApiOperation("Update event status")
     @PutMapping("queues/{queueId}/events/{tag}")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseObject updateEventStatus(
             @ApiParam("Authorization Header")
             @RequestHeader(value="Authorization", required = false) String authHeader,
@@ -116,6 +120,7 @@ public class QueueResource extends ExceptionAware {
 
     @ApiOperation("Subscribe to an event")
     @PostMapping("queues/{queueId}/events/{tag}/subscribe")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseObject subscribeEvent(
             @ApiParam("Queue id")
             @PathVariable("queueId") String queueId,
