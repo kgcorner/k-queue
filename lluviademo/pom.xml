@@ -50,12 +50,12 @@
             <version>2.3.1</version>
         </dependency>
         <dependency>
-            <groupId>com.kgaurav.kqueue</groupId>
+            <groupId>com.kgcorner.lluvia</groupId>
             <artifactId>processor</artifactId>
             <version>${project-version}</version>
         </dependency>
         <dependency>
-            <groupId>com.kgaurav.kqueue</groupId>
+            <groupId>com.kgcorner.lluvia</groupId>
             <artifactId>utility</artifactId>
             <version>${project-version}</version>
         </dependency>
