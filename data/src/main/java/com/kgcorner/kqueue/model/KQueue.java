@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReadWriteLock;
 
 public abstract class KQueue {
     private String id;
@@ -133,6 +134,24 @@ public abstract class KQueue {
     public abstract Collection<Event> getEvents();
 
     /**
+     * returns head of the queue. Should be used with FIFO and FIFO Adjust
+     * @return
+     */
+    public Event getHead() {
+        return null;
+    }
+
+
+    /**
+     * Rearranges items of the FIFO Adjust Queue by placing completed event in front. Does nothing in other two queues
+     * @param tag
+     * @return
+     */
+    public void reArrange() {
+        return;
+    }
+
+    /**
      * Add event into queue
      * @param event
      */
@@ -165,6 +184,11 @@ public abstract class KQueue {
             this.events.add(event);
             this.cashMap.put(event.getTag(), event);
         }
+
+        @Override
+        public Event getHead() {
+            return this.events.peek();
+        }
     }
 
     static class AdjustableKQueue extends KQueue {
@@ -186,6 +210,34 @@ public abstract class KQueue {
 
         public void addEvent(Event event) {
             this.events.add(event);
+        }
+
+
+        @Override
+        public void reArrange() {
+            List<Event> done = new ArrayList<>();
+            List<Event> waiting = new ArrayList<>();
+            for(Event e : events) {
+                if(e.isDoneAtSource()) {
+                    done.add(e);
+                }
+                else {
+                    waiting.add(e);
+                }
+            }
+            events = new CopyOnWriteArrayList<>();
+            events.removeAll(done);
+            events.removeAll(waiting);
+        }
+
+        @Override
+        public Event getHead() {
+            if(events.size()>0) {
+                return events.get(0);
+            }
+            else{
+                return null;
+            }
         }
     }
 
