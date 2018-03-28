@@ -1,9 +1,11 @@
 package com.kgcorner.lluvia.data;
 
 import com.google.gson.Gson;
+import com.kgcorner.lluvia.model.Application;
 import com.kgcorner.lluvia.model.KQueue;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -12,11 +14,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class QueueStore {
     private final Map<String, KQueue> kQueueMap;
+    private final Map<String, List<String>> applicationQueueMap;
     private static final QueueStore INSTANCE;
     private Date lastUpdate;
 
     private QueueStore() {
         this.kQueueMap = new ConcurrentHashMap<String, KQueue>();
+        this.applicationQueueMap = new ConcurrentHashMap<String, List<String>>();
     }
     static {
         INSTANCE = new QueueStore();

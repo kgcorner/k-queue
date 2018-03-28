@@ -1,5 +1,6 @@
 package com.lluvia.resources;
 
+import com.kgcorner.lluvia.model.Application;
 import com.kgcorner.lluvia.model.KQueue;
 import com.lluvia.KService;
 import com.lluvia.KServiceFactory;
@@ -118,7 +119,7 @@ public class QueueResource extends ExceptionAware {
 
 
     @ApiOperation("Subscribe to an event")
-    @PostMapping("queues/{queueId}/events/{tag}/subscribe")
+    @PostMapping("queues/{queueId}/events/{tag}/subscribers")
     @ResponseStatus(HttpStatus.OK)
     public ResponseObject subscribeEvent(
             @ApiParam("Queue id")
@@ -155,5 +156,17 @@ public class QueueResource extends ExceptionAware {
         responseObject.setMessage("Subscriber added succesfully");
         responseObject.setStatus(200);
         return responseObject;
+    }
+
+    @ApiOperation("Creates or register an application")
+    @PostMapping("applications")
+    @ResponseStatus(HttpStatus.OK)
+    public Application createApplication (
+            @ApiParam("Application name")
+            @RequestParam("name") String name,
+            @ApiParam("Application description")
+            @RequestParam("description") String description
+    ) {
+        return null;
     }
 }
