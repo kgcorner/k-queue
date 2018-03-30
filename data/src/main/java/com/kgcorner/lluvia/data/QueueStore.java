@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.kgcorner.lluvia.model.Application;
 import com.kgcorner.lluvia.model.KQueue;
 
+import java.security.PublicKey;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -125,5 +127,50 @@ public class QueueStore {
         public void setLastUpdate(Date lastUpdate) {
             this.lastUpdate = lastUpdate;
         }
+    }
+
+    /**
+     * Map queue id to an application
+     * @param application
+     * @param queueId
+     */
+    public void mapQueueToApplication(Application application, String queueId) {
+        List<String> ids = applicationQueueMap.get(application.getApplicationId());
+        if(ids != null) {
+            if(ids.contains(queueId)) {
+                throw new IllegalArgumentException("Application allready contains this queue");
+            }
+        }
+        else {
+            ids = new ArrayList<>();
+            applicationQueueMap.put(application.getApplicationId(), ids);
+        }
+        ids.add(queueId);
+    }
+
+    /**
+     * Returns all queues added by an application
+     * @param applicationId
+     * @return
+     */
+    public List<KQueue> getQueuesOfApplication(String applicationId) {
+        List<String> ids = applicationQueueMap.get(applicationId);
+        List<KQueue> queues = null;
+        if(ids != null) {
+            queues = new ArrayList<>();
+            for(String id : ids) {
+                queues.add(kQueueMap.get(id));
+            }
+        }
+        return queues;
+    }
+
+    public boolean queueExistsInApplication(String applicationId, String queueId) {
+        boolean result = false;
+        List<String> ids = applicationQueueMap.get(applicationId);
+        if(ids != null) {
+            result =  ids.contains(queueId);
+        }
+        return result;
     }
 }

@@ -1,4 +1,4 @@
-package com.util.exception;
+package com.kgcorner.util.exception;
 
 public class NetworkException extends Exception {
 

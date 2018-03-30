@@ -1,6 +1,6 @@
-package com.util;
+package com.kgcorner.util;
 
-import com.util.exception.NetworkException;
+import com.kgcorner.util.exception.NetworkException;
 import org.apache.log4j.Logger;
 
 import java.io.*;

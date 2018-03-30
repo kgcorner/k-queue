@@ -2,16 +2,19 @@ package com.lluvia.resources;
 
 import com.kgcorner.lluvia.model.Application;
 import com.kgcorner.lluvia.model.KQueue;
+import com.lluvia.AuthServices;
 import com.lluvia.KService;
 import com.lluvia.KServiceFactory;
 import com.lluvia.exception.ItemNotFoundException;
+import com.kgcorner.util.Strings;
 import com.lluvia.exception.UnauthorisedAccessException;
-import com.util.Strings;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,9 +22,14 @@ import java.util.List;
 public class QueueResource extends ExceptionAware {
 
     private KService service;
+    private AuthServices authService;
+    @Autowired
+    private HttpServletRequest context;
 
     public QueueResource() {
+
         service = KServiceFactory.getService();
+        authService = AuthServices.getInstance();
     }
 
     @ApiOperation("Creates a queue of given type, use 1 for FIFO, 2 for FIFO_ADJUST, 3 for IMMEDIATE")
@@ -29,16 +37,16 @@ public class QueueResource extends ExceptionAware {
     @ResponseStatus(HttpStatus.CREATED)
     public KQueue createQueue(
             @ApiParam(value = "Authorization Header", required = false)
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            @RequestHeader(value = "Authorization", required = true) String authHeader,
             @ApiParam("Queue Type")
             @RequestParam("type") int type,
             @ApiParam("Comma Separated eventTags")
             @RequestParam("events") String tags
     ) {
-
+        Application application = (Application) context.getAttribute("Application");
         if(!Strings.isNullOrEmpty(tags)) {
             List eventTags = Arrays.asList(tags.split(","));
-            return service.addQueue(type, eventTags);
+            return service.addQueue(type, eventTags, application);
         } else {
             throw new IllegalArgumentException("events can't be empty");
         }
@@ -48,15 +56,14 @@ public class QueueResource extends ExceptionAware {
     @PostMapping("queues/{queueId}/events")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseObject addEvents(
-            @ApiParam("Authorization Header")
-            @RequestHeader(value="Authorization", required = false) String authHeader,
-            @ApiParam("Queue Auth code")
-            @RequestHeader("X-QUEUE-AUTH") String queueAuthCode,
+            @ApiParam(value = "Authorization Header", required = false)
+            @RequestHeader(value = "Authorization", required = true) String authHeader,
             @ApiParam("Queue id")
             @PathVariable("queueId") String queueId,
             @ApiParam("Tag to identify event")
             @RequestParam("event") String tag
     ) {
+        Application application = (Application) context.getAttribute("Application");
         ResponseObject responseObject = null;
         KQueue queue = service.getQueue(queueId);
         if(queue == null) {
@@ -65,15 +72,15 @@ public class QueueResource extends ExceptionAware {
         if(Strings.isNullOrEmpty(tag)) {
             throw new IllegalArgumentException("tag name can't be empty");
         }
-        if(!Strings.isNullOrEmpty(queue.getAuthString()) && queue.getAuthString().equals(queueAuthCode)) {
-            service.addEvent(queueId, tag);
-            responseObject = new ResponseObject();
-            responseObject.setMessage("Event created successfully");
-            responseObject.setStatus(201);
+
+        if(!service.queueBelongsToApplication(application.getApplicationId(), queueId)) {
+            throw new ItemNotFoundException("You don't have any such queue");
         }
-        else {
-            throw new UnauthorisedAccessException("Invalid Queue authcode provided");
-        }
+
+        service.addEvent(queueId, tag);
+        responseObject = new ResponseObject();
+        responseObject.setMessage("Event created successfully");
+        responseObject.setStatus(201);
         return responseObject;
     }
 
@@ -82,10 +89,8 @@ public class QueueResource extends ExceptionAware {
     @PutMapping("queues/{queueId}/events/{tag}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseObject updateEventStatus(
-            @ApiParam("Authorization Header")
-            @RequestHeader(value="Authorization", required = false) String authHeader,
-            @ApiParam("Queue Auth code")
-            @RequestHeader("X-QUEUE-AUTH") String queueAuthCode,
+            @ApiParam(value = "Authorization Header", required = false)
+            @RequestHeader(value = "Authorization", required = true) String authHeader,
             @ApiParam("Queue id")
             @PathVariable("queueId") String queueId,
             @ApiParam("Tag to identify event")
@@ -95,6 +100,7 @@ public class QueueResource extends ExceptionAware {
             @ApiParam(value = "Data in json format if status is completed", required = false)
             @RequestParam(value = "data", required = false) String data
     ) {
+        Application application = (Application) context.getAttribute("Application");
         ResponseObject responseObject = null;
         KQueue queue = service.getQueue(queueId);
         if(queue == null) {
@@ -103,17 +109,18 @@ public class QueueResource extends ExceptionAware {
         if(Strings.isNullOrEmpty(tag)) {
             throw new IllegalArgumentException("tag name can't be empty");
         }
-        if(!Strings.isNullOrEmpty(queue.getAuthString()) && queue.getAuthString().equals(queueAuthCode)) {
-            if(status == 1) {
-                service.markEventCompleted(tag, data, queueId);
-            }
-            responseObject = new ResponseObject();
-            responseObject.setMessage("event's status has been updated");
-            responseObject.setStatus(200);
+
+        if(!service.queueBelongsToApplication(application.getApplicationId(), queueId)) {
+            throw new ItemNotFoundException("You don't have any such queue");
         }
-        else {
-            throw new UnauthorisedAccessException("Invalid Queue authcode provided");
+
+        if(status == 1) {
+            service.markEventCompleted(tag, data, queueId);
         }
+
+        responseObject = new ResponseObject();
+        responseObject.setMessage("event's status has been updated");
+        responseObject.setStatus(200);
         return responseObject;
     }
 
@@ -153,7 +160,7 @@ public class QueueResource extends ExceptionAware {
         }
         service.addSubscriber(queueId, tag, endpoint, method, contentType);
         responseObject = new ResponseObject();
-        responseObject.setMessage("Subscriber added succesfully");
+        responseObject.setMessage("Subscriber added successfully");
         responseObject.setStatus(200);
         return responseObject;
     }
@@ -167,6 +174,9 @@ public class QueueResource extends ExceptionAware {
             @ApiParam("Application description")
             @RequestParam("description") String description
     ) {
-        return null;
+        Application application = new Application();
+        application.setName(name);
+        application.setDescription(description);
+        return authService.addApplication(application);
     }
 }

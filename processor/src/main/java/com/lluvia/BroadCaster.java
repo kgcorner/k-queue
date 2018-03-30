@@ -2,9 +2,9 @@ package com.lluvia;
 
 import com.kgcorner.lluvia.model.Event;
 import com.kgcorner.lluvia.model.Subscriber;
-import com.util.HttpUtil;
-import com.util.Response;
-import com.util.exception.NetworkException;
+import com.kgcorner.util.HttpUtil;
+import com.kgcorner.util.Response;
+import com.kgcorner.util.exception.NetworkException;
 import org.apache.log4j.Logger;
 
 import java.util.Date;

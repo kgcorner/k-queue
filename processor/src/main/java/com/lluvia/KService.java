@@ -1,5 +1,6 @@
 package com.lluvia;
 
+import com.kgcorner.lluvia.model.Application;
 import com.kgcorner.lluvia.model.Event;
 import com.kgcorner.lluvia.model.KQueue;
 
@@ -33,8 +34,9 @@ public interface KService {
      * Add Queue to store
      * @param type
      * @param eventTags
+     * @param application
      */
-    KQueue addQueue(int type, List<String> eventTags);
+    KQueue addQueue(int type, List<String> eventTags, Application application);
 
     /**
      * Removes queue from store
@@ -74,4 +76,12 @@ public interface KService {
      * @param contentType
      */
     void addSubscriber(String queueId, String eventTag, String endpoint, String method, String contentType);
+
+    /**
+     * Returns true if the queue belongs to given application false otherwise
+     * @param applicationId
+     * @param queueId
+     * @return
+     */
+    boolean queueBelongsToApplication(String applicationId, String queueId);
 }

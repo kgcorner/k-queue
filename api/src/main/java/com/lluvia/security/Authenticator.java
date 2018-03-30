@@ -1,11 +1,14 @@
 package com.lluvia.security;
 
+import com.kgcorner.lluvia.model.Application;
+import com.lluvia.exception.InvalidTokenException;
+
 /**
  * Created by admin on 3/28/2018.
  */
 public class Authenticator {
-    public static Boolean authenticate(String token) {
-        boolean result = false;
+    public static Application authenticate(String token) throws InvalidTokenException {
+        Application application = null;
         if(!token.contains(" ")) {
             throw new IllegalArgumentException("Invalid token format");
         }
@@ -22,8 +25,8 @@ public class Authenticator {
             default:
                 throw new IllegalArgumentException("Invalid token scheme");
         }
-        result = verifier.verify(tokens[1]);
+        application = verifier.verify(tokens[1]);
 
-        return result;
+        return application;
     }
 }

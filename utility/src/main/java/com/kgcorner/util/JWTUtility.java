@@ -1,4 +1,4 @@
-package com.util;
+package com.kgcorner.util;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -11,15 +11,13 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public class JWTUtility {
     private static final String HEADER_JWT="{\"typ\":\"jwt\",\"alg\":\"HS256\"}";
     private static final String PROPERTIES_FILE="/utility.manager.properties";
     private static final String JWT_SECRET_IDENTIFIER="jwt.secret";
-    private static final String ISSUER="pixyfi";
+    private static final String ISSUER="kgcorner";
     private static final String JWT_SECRET = "adYCGZjJcIx0pswtJ4TO";
-
     public static String generateJWT(String payload) {
         String jwt = null;
         try {
@@ -29,9 +27,9 @@ public class JWTUtility {
             header.put("typ", "JWT");
             Map<String, Object> claim = new HashMap<>();
             claim.put("payload", payload);
-            claim.put("issuer", payload);
+            claim.put("issuer", ISSUER);
             jwt = JWT.create().withClaim("payload", payload)
-                    .withIssuer("pixyfi")
+                    .withIssuer(ISSUER)
                     .withIssuedAt(new Date())
                     .withClaim("payload", payload)
                     .withHeader(header).sign(algorithmHS);

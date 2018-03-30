@@ -1,4 +1,4 @@
-package com.util;
+package com.kgcorner.util;
 
 public class Response {
     private String data;

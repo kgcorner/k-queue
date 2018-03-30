@@ -17,6 +17,10 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.kgcorner.lluvia</groupId>
+            <artifactId>utility</artifactId>
+            <version>${project-version}</version>
+        </dependency>
     </dependencies>
 </project>

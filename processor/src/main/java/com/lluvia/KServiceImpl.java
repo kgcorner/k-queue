@@ -1,12 +1,14 @@
 package com.lluvia;
 
+import com.kgcorner.lluvia.data.ApplicationStore;
 import com.kgcorner.lluvia.data.QueueStore;
+import com.kgcorner.lluvia.model.Application;
 import com.kgcorner.lluvia.model.Event;
 import com.kgcorner.lluvia.model.KQueue;
 import com.kgcorner.lluvia.model.Subscriber;
 import com.lluvia.exception.IncompatibleQueueException;
-import com.util.IDGenerator;
-import com.util.JWTUtility;
+import com.kgcorner.util.IDGenerator;
+import com.kgcorner.util.JWTUtility;
 import org.apache.log4j.Logger;
 
 import java.util.Date;
@@ -16,6 +18,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 public class KServiceImpl implements KService {
 
     private static final QueueStore STORE = QueueStore.getInstance();
+    private static final ApplicationStore APP_STORE = ApplicationStore.getInstance();
     private static KService INSTANCE;
     private static final Logger LOGGER = Logger.getLogger(KServiceImpl.class);
 
@@ -72,7 +75,7 @@ public class KServiceImpl implements KService {
 
 
     @Override
-    public KQueue addQueue(int type, List<String> eventTags) {
+    public KQueue addQueue(int type, List<String> eventTags, Application application) {
         KQueue.QUEUE_TYPE queueType ;
         switch (type) {
             case 1:
@@ -87,12 +90,13 @@ public class KServiceImpl implements KService {
                 default:
                     throw new IllegalArgumentException("Invalid Queue type "+type);
         }
-        String queueId = IDGenerator.generateQueueId();
+        String queueId = IDGenerator.generateId();
         String authString = JWTUtility.generateJWT(queueId);
         KQueue queue = KQueue.createQueue(queueId, queueType, eventTags, authString);
         queue.setCreatedAt(new Date());
         queue.setLastUpdatedAt(new Date());
         STORE.addKQueue(queueId, queue);
+
         return queue;
     }
 
@@ -146,5 +150,10 @@ public class KServiceImpl implements KService {
                 }
             }
         }
+    }
+
+    @Override
+    public boolean queueBelongsToApplication(String applicationId, String queueId) {
+        return STORE.queueExistsInApplication(applicationId, queueId);
     }
 }

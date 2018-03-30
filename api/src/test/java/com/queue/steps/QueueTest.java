@@ -3,7 +3,7 @@ package com.queue.steps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.queue.*;
-import com.util.HttpUtil;
+import com.kgcorner.util.HttpUtil;
 import cucumber.api.java.Before;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
