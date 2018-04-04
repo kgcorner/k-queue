@@ -123,5 +123,11 @@ public class AuthServices {
         return application;
     }
 
+    public String authorizeApplication(Application application) {
+        String bearerToken = generateBearerToken(application);
+        APP_STORE.setBearer(bearerToken, application.getApplicationId());
+        return bearerToken;
+    }
+
 
 }

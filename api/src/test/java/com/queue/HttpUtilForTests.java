@@ -13,6 +13,7 @@ public class HttpUtilForTests {
     private static final int SUCCESS_CODE = 200;
     private static final int ERROR_CODE = 400;
     private static final Logger LOGGER = Logger.getLogger(HttpUtilForTests.class);
+
     public static String sendGetRequest(String url, Map<String, String> header) throws NetworkException {
         HttpURLConnection connection = null;
         String response = null;
@@ -48,6 +49,49 @@ public class HttpUtilForTests {
             throw new NetworkException(e.getLocalizedMessage());
         }
         return response;
+    }
+
+    public static Response getGetResponse(String url, Map<String, String> header) throws NetworkException {
+        HttpURLConnection connection = null;
+        String response = null;
+        URL restUrl = null;
+        InputStream is = null;
+        int status = 0;
+        Response responseData = null;
+        try {
+            if(url.contains("\"")) {
+                url = url.replace("\"","");
+            }
+            restUrl = new URL(url);
+            connection = (HttpURLConnection) restUrl.openConnection();
+            connection.setRequestMethod("GET");
+            if(header != null) {
+                for (String key : header.keySet()) {
+                    connection.setRequestProperty(key,  header.get(key));
+                }
+            }
+            is = new BufferedInputStream(connection.getInputStream());
+            response = convertStreamToString(is);
+            status = connection.getResponseCode();
+            if(status >= ERROR_CODE) {
+                throw new NetworkException(response);
+            }
+        } catch (MalformedURLException e) {
+            throw new NetworkException(e.getLocalizedMessage());
+        } catch (IOException e) {
+            is = new BufferedInputStream(connection.getErrorStream());
+            try {
+                response = convertStreamToString(is);
+                status = connection.getResponseCode();
+                LOGGER.error("Error Response:"+response);
+            } catch (IOException e1) {
+                LOGGER.error(e1.getMessage(), e1);
+            }
+        }
+        responseData = new Response();
+        responseData.setStatus(status);
+        responseData.setData(response);
+        return responseData;
     }
 
     public static int sendGetResponseCode(String url, Map<String, String> header) throws NetworkException {
@@ -190,20 +234,19 @@ public class HttpUtilForTests {
             is = new BufferedInputStream(connection.getInputStream());
             response = convertStreamToString(is);
             status = connection.getResponseCode();
-            if( status >= ERROR_CODE) {
-                throw new NetworkException(response);
-            }
+
         } catch (MalformedURLException e) {
             throw new NetworkException(e.getLocalizedMessage());
         } catch (IOException e) {
             is = new BufferedInputStream(connection.getErrorStream());
             try {
                 response = convertStreamToString(is);
-                LOGGER.error("Error Response:"+response);
+                status = connection.getResponseCode();
+                LOGGER.error("Error Response <"+url+">:"+response);
             } catch (IOException e1) {
                 LOGGER.error(e1.getMessage(), e1);
             }
-            throw new NetworkException(e.getLocalizedMessage());
+
         }
         r.setData(response);
         r.setStatus(status);
@@ -237,20 +280,18 @@ public class HttpUtilForTests {
             is = new BufferedInputStream(connection.getInputStream());
             response = convertStreamToString(is);
             status = connection.getResponseCode();
-            if( status >= ERROR_CODE) {
-                throw new NetworkException(response);
-            }
+
         } catch (MalformedURLException e) {
             throw new NetworkException(e.getLocalizedMessage());
         } catch (IOException e) {
             is = new BufferedInputStream(connection.getErrorStream());
             try {
                 response = convertStreamToString(is);
+                status = connection.getResponseCode();
                 LOGGER.error("Error Response:"+response);
             } catch (IOException e1) {
                 LOGGER.error(e1.getMessage(), e1);
             }
-            throw new NetworkException(e.getLocalizedMessage());
         }
         r.setData(response);
         r.setStatus(status);

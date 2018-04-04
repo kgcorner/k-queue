@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class AuthFilter implements Filter{
-    private static final String APPLICATION_PATH = "applications";
+    private static final String APPLICATION_PATH = "/applications";
     private static final String SUBSCRIBE_PATH = "/subscribers";
     private static final Logger LOGGER = Logger.getLogger(AuthFilter.class);
     @Override
@@ -25,6 +25,7 @@ public class AuthFilter implements Filter{
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         String path = ((HttpServletRequest) request).getServletPath();
         String method = ((HttpServletRequest) request).getMethod();
+        LOGGER.info("PATH:"+path);
 
         if(method.equals("OPTIONS") || path.equals(APPLICATION_PATH) || path.endsWith(SUBSCRIBE_PATH)) {
             chain.doFilter(request, response);
@@ -47,13 +48,14 @@ public class AuthFilter implements Filter{
             try {
                 Application application = Authenticator.authenticate(token);
                 request.setAttribute("Application", application);
+                chain.doFilter(request, response);
             } catch (InvalidTokenException e) {
                 JSONObject jsonObject = new JSONObject();
                 try {
                     jsonObject.put("message", e.getMessage());
                     jsonObject.put("code", 403);
-                    ((HttpServletResponse) request).setStatus(403);
-                    ((HttpServletResponse) request).getOutputStream().write(jsonObject.toString().getBytes());
+                    ((HttpServletResponse) response).setStatus(403);
+                    ((HttpServletResponse) response).getOutputStream().write(jsonObject.toString().getBytes());
                 } catch (JSONException e1) {
                     e1.printStackTrace();
                 }

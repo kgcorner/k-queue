@@ -26,7 +26,8 @@ public class BasicVerifier implements Verifier{
         String applicationId = decodedToken.split(":")[0];
         String applicationSecret = decodedToken.split(":")[1];
         application = ApplicationStore.getInstance().getApplication(applicationId);
-        if(!application.getApplicationSecret().trim().equals(applicationSecret)) {
+
+        if(application == null || !application.getApplicationSecret().trim().equals(applicationSecret)) {
             throw new InvalidTokenException("Invalid token provided");
         }
         return application;

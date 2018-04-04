@@ -22,24 +22,42 @@ public class ApplicationStore {
         APPLICATIONS_BEARER = new HashMap<>();
     }
 
+    /**
+     * Get instance of {@link ApplicationStore}
+     * @return
+     */
     public static ApplicationStore getInstance() {
         return INSTANCE;
     }
 
+    /**
+     * App Application to Application Store
+     * @param application
+     */
     public void addApplication(Application application) {
         this.APPLICATIONS.put(application.getApplicationId(), application);
     }
 
+    /**
+     * Get application by Application Id
+     * @param applicationId
+     * @return
+     */
     public Application getApplication(String applicationId) {
         return APPLICATIONS.get(applicationId);
     }
 
+    /**
+     * Set Application's Bearer Token
+     * @param bearerToken
+     * @param applicationId
+     */
     public void setBearer(String bearerToken, String applicationId) {
-        if(!Strings.isNullOrEmpty(bearerToken)) {
+        if(Strings.isNullOrEmpty(bearerToken)) {
             throw new IllegalArgumentException("Bearer token can't be null or empty");
         }
 
-        if(!Strings.isNullOrEmpty(applicationId)) {
+        if(Strings.isNullOrEmpty(applicationId)) {
             throw new IllegalArgumentException("Application Id can't be null or empty");
         }
 
@@ -51,13 +69,17 @@ public class ApplicationStore {
         APPLICATIONS_BEARER.put(bearerToken, app);
     }
 
+    /**
+     * Get Application by Bearer Token
+     * @param bearerToken
+     * @return
+     */
     public Application getApplicationByBearer(String bearerToken) {
         if(!Strings.isNullOrEmpty(bearerToken)) {
             throw new IllegalArgumentException("Bearer token can't be null or empty");
         }
         return APPLICATIONS_BEARER.get(bearerToken);
     }
-
 
 
 }

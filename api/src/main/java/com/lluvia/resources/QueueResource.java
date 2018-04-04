@@ -1,5 +1,7 @@
 package com.lluvia.resources;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.kgcorner.lluvia.model.Application;
 import com.kgcorner.lluvia.model.KQueue;
 import com.lluvia.AuthServices;
@@ -10,6 +12,7 @@ import com.kgcorner.util.Strings;
 import com.lluvia.exception.UnauthorisedAccessException;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +23,10 @@ import java.util.List;
 
 @RestController
 public class QueueResource extends ExceptionAware {
-
+    private static final Logger LOGGER = Logger.getLogger(QueueResource.class);
     private KService service;
     private AuthServices authService;
+    private static final String APPLICATION = "Application";
     @Autowired
     private HttpServletRequest context;
 
@@ -36,14 +40,14 @@ public class QueueResource extends ExceptionAware {
     @PostMapping("queues")
     @ResponseStatus(HttpStatus.CREATED)
     public KQueue createQueue(
-            @ApiParam(value = "Authorization Header", required = false)
+            @ApiParam(value = "Authorization Header", required = true)
             @RequestHeader(value = "Authorization", required = true) String authHeader,
             @ApiParam("Queue Type")
             @RequestParam("type") int type,
             @ApiParam("Comma Separated eventTags")
             @RequestParam("events") String tags
     ) {
-        Application application = (Application) context.getAttribute("Application");
+        Application application = (Application) context.getAttribute(APPLICATION);
         if(!Strings.isNullOrEmpty(tags)) {
             List eventTags = Arrays.asList(tags.split(","));
             return service.addQueue(type, eventTags, application);
@@ -56,14 +60,14 @@ public class QueueResource extends ExceptionAware {
     @PostMapping("queues/{queueId}/events")
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseObject addEvents(
-            @ApiParam(value = "Authorization Header", required = false)
+            @ApiParam(value = "Authorization Header", required = true)
             @RequestHeader(value = "Authorization", required = true) String authHeader,
             @ApiParam("Queue id")
             @PathVariable("queueId") String queueId,
             @ApiParam("Tag to identify event")
             @RequestParam("event") String tag
     ) {
-        Application application = (Application) context.getAttribute("Application");
+        Application application = (Application) context.getAttribute(APPLICATION);
         ResponseObject responseObject = null;
         KQueue queue = service.getQueue(queueId);
         if(queue == null) {
@@ -89,7 +93,7 @@ public class QueueResource extends ExceptionAware {
     @PutMapping("queues/{queueId}/events/{tag}")
     @ResponseStatus(HttpStatus.OK)
     public ResponseObject updateEventStatus(
-            @ApiParam(value = "Authorization Header", required = false)
+            @ApiParam(value = "Authorization Header", required = true)
             @RequestHeader(value = "Authorization", required = true) String authHeader,
             @ApiParam("Queue id")
             @PathVariable("queueId") String queueId,
@@ -100,7 +104,7 @@ public class QueueResource extends ExceptionAware {
             @ApiParam(value = "Data in json format if status is completed", required = false)
             @RequestParam(value = "data", required = false) String data
     ) {
-        Application application = (Application) context.getAttribute("Application");
+        Application application = (Application) context.getAttribute(APPLICATION);
         ResponseObject responseObject = null;
         KQueue queue = service.getQueue(queueId);
         if(queue == null) {
@@ -167,16 +171,43 @@ public class QueueResource extends ExceptionAware {
 
     @ApiOperation("Creates or register an application")
     @PostMapping("applications")
-    @ResponseStatus(HttpStatus.OK)
+    @ResponseStatus(HttpStatus.CREATED)
     public Application createApplication (
             @ApiParam("Application name")
             @RequestParam("name") String name,
             @ApiParam("Application description")
             @RequestParam("description") String description
     ) {
+        if(Strings.isNullOrEmpty(name) || name.trim().length()<3) {
+            throw new IllegalArgumentException("Application name can't be less than 3 characters, name given:"+name);
+        }
         Application application = new Application();
         application.setName(name);
         application.setDescription(description);
         return authService.addApplication(application);
+    }
+
+    @ApiOperation("Creates or register an application")
+    @GetMapping("tokens")
+    @ResponseStatus(HttpStatus.OK)
+    public String createTokens (
+            @ApiParam(value = "Authorization Header", required = true)
+            @RequestHeader(value = "Authorization", required = true) String authHeader
+    ) {
+        String response = null;
+        Application application = (Application) this.context.getAttribute(APPLICATION);
+        if(application != null) {
+            String token = authService.authorizeApplication(application);
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("token", token);
+            jsonObject.addProperty("status", 201);
+            Gson gson = new Gson();
+            response = gson.toJson(jsonObject);
+            LOGGER.info("Response generated:"+response);
+        } else {
+            throw new IllegalArgumentException("invalid basic token provided");
+        }
+        LOGGER.info("Sending Response generated:"+response);
+        return response;
     }
 }

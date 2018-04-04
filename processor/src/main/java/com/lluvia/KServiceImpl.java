@@ -96,7 +96,7 @@ public class KServiceImpl implements KService {
         queue.setCreatedAt(new Date());
         queue.setLastUpdatedAt(new Date());
         STORE.addKQueue(queueId, queue);
-
+        STORE.mapQueueToApplication(application, queue.getId());
         return queue;
     }
 
